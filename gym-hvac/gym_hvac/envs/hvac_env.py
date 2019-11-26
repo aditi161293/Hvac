@@ -209,8 +209,9 @@ class HVACEnv(gym.Env):
         self.seed()
         self.viewer = None
         self.state = None
+
         # Terminate upon reaching failure conditions
-        self.termination = True
+        self.termination = False
 
         self.steps_beyond_done = None
 
@@ -225,12 +226,23 @@ class HVACEnv(gym.Env):
     # and around the minimum and maximum threshold (10 and 33 celsius) it returns roughly -1.75, which isn't too extreme
     # In the range 20-23 just use reward 1.
     def calculate_temperature_reward(self, state):
+        # TODO :: If the temperature is way to high, exit the episode
         reward = 0
         for temperature in state[3:]:
             if self.desired_temperature_low <= temperature <= self.desired_temperature_high:
-                reward += 1
+                reward += 17
+            elif self.desired_temperature_low - 5 <= temperature < self.desired_temperature_low \
+                or self.desired_temperature_high < temperature <= self.desired_temperature_high + 5:
+                reward -= 5
+            elif self.desired_temperature_low - 25 <= temperature < self.desired_temperature_low - 10 \
+                or self.desired_temperature_high + 10 < temperature <= self.desired_temperature_high + 25:
+                self.termination = True
             else:
                 reward += -0.8165 * math.sqrt(abs(temperature - self.desired_temperature_mean)) + 1
+        # print(f'Attic: {state[3]}')
+        # print(f'Main : {state[4]}')
+        # print(f'Base : {state[5]}')
+        # print(f'Reward: {reward}\n')
         return reward
 
     def calculate_action_cost(self, action):
@@ -241,6 +253,7 @@ class HVACEnv(gym.Env):
         return 0.75 * self.calculate_temperature_reward(state) + 0.25 * self.calculate_action_cost(action)
 
     def step(self, action):
+        #self.termination = False
         assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
         state = self.state
         air_temp, ground_temp, hvac_temp, basement_temp, main_temp, attic_temp = state
@@ -264,19 +277,29 @@ class HVACEnv(gym.Env):
                       new_main_temp,
                       new_attic_temp)
 
-        # Calculate done - Separated for debugging
-        done_basement_lower = new_basement_temp < self.lower_temperature_threshold
-        done_basement_upper = new_basement_temp > self.upper_temperature_threshold
-        done_main_lower = new_main_temp < self.lower_temperature_threshold
-        done_main_upper = new_main_temp > self.upper_temperature_threshold
-        done_attic_lower = new_attic_temp < self.lower_temperature_threshold
-        done_attic_upper = new_attic_temp > self.upper_temperature_threshold
-        done_step_count_limit = self.step_count >= self.step_limit
 
-        done = bool(done_basement_lower or done_basement_upper
-                    or done_main_lower or done_main_upper
-                    or done_attic_lower or done_attic_upper
-                    or done_step_count_limit) and self.termination
+
+        # # Calculate done - Separated for debugging
+        # done_basement_lower = new_basement_temp < self.lower_temperature_threshold
+        # done_basement_upper = new_basement_temp > self.upper_temperature_threshold
+        # done_main_lower = new_main_temp < self.lower_temperature_threshold
+        # done_main_upper = new_main_temp > self.upper_temperature_threshold
+        # done_attic_lower = new_attic_temp < self.lower_temperature_threshold
+        # done_attic_upper = new_attic_temp > self.upper_temperature_threshold
+        # done_step_count_limit = self.step_count >= self.step_limit
+
+        done_basement = self.desired_temperature_low <= new_basement_temp <= self.desired_temperature_high
+        done_attic = self.desired_temperature_low <=  new_main_temp <= self.desired_temperature_high
+        done_main = self.desired_temperature_low <= new_main_temp <= self.desired_temperature_high
+        
+
+
+        # done = bool(done_basement_lower or done_basement_upper
+        #             and done_main_lower or done_main_upper
+        #             and done_attic_lower or done_attic_upper
+        #             and done_step_count_limit) and self.termination
+        done = bool(done_basement and done_attic and done_main) or self.termination or self.step_count > self.step_limit
+
 
         if not done:
             reward = self.calculate_reward(state, action)
