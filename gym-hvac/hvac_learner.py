@@ -72,11 +72,15 @@ def hvac():
     action_space = env.action_space.n
     dqn_solver = DQNSolver(observation_space, action_space)
     run = 0
+    totalr = 0
+
     mainTemList=[]
     basementTempList=[]
     atticTempList=[]
     heaterTempList=[]
     timeList=[]
+    totalReward=[]
+    ttr=[]
 
 
     with open('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output/results.csv', 'w', newline='') as outfile:
@@ -105,7 +109,7 @@ def hvac():
         while True:
             action = dqn_solver.act(state)
             state_next, reward, terminal, info = env.step(action)
-            with open('/home/rjohnson/school/machine_learning/Hvac/output/results_test1.csv', 'a', newline='') as outfile:
+            with open('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output/results.csv', 'a', newline='') as outfile:
                 csv_writer = csv.writer(outfile)
                 csv_writer.writerow([run, step, env.time] +
                                     state_next.tolist() +
@@ -118,17 +122,19 @@ def hvac():
 
             dqn_solver.remember(state, action, reward, state_next, terminal)
             state = state_next
-
             if terminal:
                 if(run%50==0):
                     mainTemList.append(sn[0][4])
                     atticTempList.append(sn[0][5])
                     basementTempList.append(sn[0][3])
                     heaterTempList.append(sn[0][2] + 20)
-                    timeList.append(env.time / 60)
+                    timeList.append(run)
+                    totalr=totalr+reward
+                    ttr.append(totalr)
+                    totalReward.append(env.total_reward)
 
                 print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(step) + ", Total_reward: "+str(env.total_reward))
-                
+
                 break
             dqn_solver.experience_replay()
             step += 1
@@ -142,7 +148,7 @@ def hvac():
                 print("Training fresh model")
 
         run += 1
-    return mainTemList,atticTempList,basementTempList,heaterTempList,timeList
+    return mainTemList,atticTempList,basementTempList,heaterTempList,timeList,ttr,totalReward
 
 # we will use this later to check our network is learning orr not
 # if os.path.exists(checkpoint_fname):
@@ -155,15 +161,17 @@ def hvac():
 
 
 if __name__ == "__main__":
-    mainTemp,atticTemp,basementTemp,heaterTemp,time=hvac()
-    # print(mainTemp)
-    # print(atticTemp)
-    # print(basementTemp)
-    # print(heaterTemp)
-    # print(time)
+    mainTemp,atticTemp,basementTemp,heaterTemp,time,ttr,tr=hvac()
+    print(mainTemp)
+    print(atticTemp)
+    print(basementTemp)
+    print(heaterTemp)
+    print(time)
+    print(ttr)
+    print(tr)
 
-    # plt.plot(time,mainTemp)
-    # plt.plot(time,atticTemp)
-    # plt.plot(time,basementTemp)
-    # plt.plot(time,heaterTemp)
-    # plt.show()
+    plt.plot(time,mainTemp)
+    plt.plot(time,atticTemp)
+    plt.plot(time,basementTemp)
+    plt.plot(time,heaterTemp)
+    plt.show()
