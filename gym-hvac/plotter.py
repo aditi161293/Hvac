@@ -7,20 +7,15 @@ import sys
 
 
 def plotter(episode, results_filename, output_dir, ylim):
-    df = pd.read_csv('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output/results3.csv')
-    #df = df[df['time'] == episode]
+    df = pd.read_csv('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output/results.csv')
+    df = df[df['episode'] == episode]
     x = ['time']
-
-
-
-
-
-
 
     y = ['hvac_temperature',
          'basement_temperature',
          'main_temperature',
-          'attic_temperature']
+          'attic_temperature',
+         'reward']
         # 'total_reward',
          #'reward']
     selected_df = df[x + y]
@@ -28,8 +23,9 @@ def plotter(episode, results_filename, output_dir, ylim):
     sns.set(style="darkgrid")
     plt.figure(num=None, figsize=(10, 6), dpi=80, facecolor='w', edgecolor='k')
     ax = sns.lineplot(x='time', y='value', hue='variable', data=melted_df)
-    ax.set(ylim=(5,30))
+    ax.set(ylim= ylim)
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    plt.title('Episode '+str(episode))
     plt.savefig(os.path.join('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output', '{:0>3}.png'.format(episode)), bbox_inches='tight')
     plt.show()
     # x = ['episode']

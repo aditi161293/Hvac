@@ -1,6 +1,8 @@
 import csv
 import random
 import gym
+import os
+
 import gym_hvac
 from gym_hvac import *
 import matplotlib.pyplot as plt
@@ -23,6 +25,8 @@ BATCH_SIZE = 20
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.01
 EXPLORATION_DECAY = 0.995
+checkpoint_fname = "checkpoint1.h5"
+
 
 
 class DQNSolver:
@@ -36,7 +40,6 @@ class DQNSolver:
         self.model = Sequential()
         self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
         self.model.add(Dense(24, activation="relu"))
-
         self.model.add(Dense(self.action_space, activation="linear"))
         self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
 
@@ -75,6 +78,7 @@ def hvac():
     heaterTempList=[]
     timeList=[]
 
+
     with open('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output/results.csv', 'w', newline='') as outfile:
         csv_writer = csv.writer(outfile)
         csv_writer.writerow(['episode',
@@ -92,7 +96,7 @@ def hvac():
                              'total_reward',
                              'terminal'])
 
-    while run<1000:
+    while run<1500:
         state = env.reset()
         state = np.reshape(state, [1, observation_space])
         step = 0
@@ -120,13 +124,30 @@ def hvac():
                     heaterTempList.append(sn[0][2] + 20)
                     timeList.append(env.time / 60)
 
-                print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(step))
+                print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(step) + ", Total_reward: "+str(env.total_reward))
                 break
             dqn_solver.experience_replay()
             step += 1
-        run += 1
+        if run % 100 == 0:
+            dqn_solver.model.save_weights(checkpoint_fname, overwrite=True)
+            print("model saved")
+            if os.path.exists(checkpoint_fname):
+                dqn_solver.model.load_weights(checkpoint_fname)
+                print("Restored")
+            else:
+                print("Training fresh model")
 
+        run += 1
     return mainTemList,atticTempList,basementTempList,heaterTempList,timeList
+
+# we will use this later to check our network is learning orr not
+# if os.path.exists(checkpoint_fname):
+#     dqn_solver.model.load_weights(checkpoint_fname)
+#     print("Restored")
+# else:
+#     print("Training fresh model")
+
+
 
 
 if __name__ == "__main__":

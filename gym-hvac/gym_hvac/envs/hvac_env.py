@@ -20,8 +20,10 @@ class HVACEnv(gym.Env):
         The basement is the lowest room. It touches the earth and the main floor.
         The main floor is the middle room. It touches the basement, the attic, and the surrounding air.
         The attic is upper room. It touches the main floor and the surrounding air.
+
     Source:
         http://www.sharetechnote.com/html/DE_Modeling_Example_Cooling.html
+
     Observation:
         Type: Box(5)
         Num	Observation                 Min         Max
@@ -31,8 +33,10 @@ class HVACEnv(gym.Env):
         3	Temperature Basement        0           40
         4	Temperature Main Floor      0           40
         5	Temperature Attic           0           40
+
     "30 is hot, 20 is pleasing, 10 is cold, 0 is freezing"
     20 Celsius (68 F) is roughly room temperature, and 30 and 10 make convenient hot/cold thresholds.
+
     Actions:
         Type: Discrete(2)
         Num	Action
@@ -41,8 +45,10 @@ class HVACEnv(gym.Env):
         2	Turn the heater on
     Reward:
         Reward is 1 for every step taken, including the termination step
+
     Starting State:
         All observations are assigned a uniform random value in [10..20]
+
     Episode Termination:
         Temperature Basement is less than 10 or more than 30
         Temperature Main Floor is less than 10 or more than 30
@@ -192,7 +198,7 @@ class HVACEnv(gym.Env):
             40,
             40])
         self.step_count = 0
-        self.step_limit = 700
+        self.step_limit = 96 # because 1 step is 15 min so 96 steps is 24 hours
         self.time = 0
         # Tau is the time scale (seconds)
         # 900 is 15 minutes
@@ -268,9 +274,9 @@ class HVACEnv(gym.Env):
         done_step_count_limit = self.step_count >= self.step_limit
 
         done = bool(done_basement_lower or done_basement_upper
-                    and done_main_lower or done_main_upper
-                    and done_attic_lower or done_attic_upper
-                    and done_step_count_limit) and self.termination
+                    or done_main_lower or done_main_upper
+                    or done_attic_lower or done_attic_upper
+                    or done_step_count_limit) and self.termination
 
         if not done:
             reward = self.calculate_reward(state, action)
@@ -278,6 +284,7 @@ class HVACEnv(gym.Env):
             # Episode just ended!
             self.steps_beyond_done = 0
             reward = self.calculate_reward(state, action)
+
         else:
             if self.steps_beyond_done == 0:
                 logger.warn(
@@ -293,6 +300,7 @@ class HVACEnv(gym.Env):
         self.time = 0
         self.total_heat_added = 0
         self.step_count = 0
+        self.total_reward = 0
         self.state = np.concatenate((np.array([self.get_air_temperature(0),
                                                self.get_ground_temperature(0),
                                                0]),
