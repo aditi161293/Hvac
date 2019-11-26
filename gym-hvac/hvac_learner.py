@@ -75,7 +75,7 @@ def hvac():
     heaterTempList=[]
     timeList=[]
 
-    with open('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output/results.csv', 'w', newline='') as outfile:
+    with open('/home/rjohnson/school/machine_learning/Hvac/output/results_test1.csv', 'w', newline='') as outfile:
         csv_writer = csv.writer(outfile)
         csv_writer.writerow(['episode',
                              'step',
@@ -96,15 +96,17 @@ def hvac():
         state = env.reset()
         state = np.reshape(state, [1, observation_space])
         step = 0
+        env.termination = False
         while True:
             action = dqn_solver.act(state)
             state_next, reward, terminal, info = env.step(action)
-            with open('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output/results.csv', 'a', newline='') as outfile:
+            with open('/home/rjohnson/school/machine_learning/Hvac/output/results_test1.csv', 'a', newline='') as outfile:
                 csv_writer = csv.writer(outfile)
                 csv_writer.writerow([run, step, env.time] +
                                     state_next.tolist() +
                                     [env.total_heat_added, int(action), reward, env.total_reward, terminal])
             reward = reward if not terminal else -reward
+            #print(f'REWARD:::::::{reward}')        
 
             state_next = np.reshape(state_next, [1, observation_space])
             sn=state_next.tolist()
@@ -113,14 +115,7 @@ def hvac():
             state = state_next
 
             if terminal:
-                if(run%50==0):
-                    mainTemList.append(sn[0][4])
-                    atticTempList.append(sn[0][5])
-                    basementTempList.append(sn[0][3])
-                    heaterTempList.append(sn[0][2] + 20)
-                    timeList.append(env.time / 60)
-
-                print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(step))
+                print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(step)  + ", total_reward: " + str(env.total_reward))
                 break
             dqn_solver.experience_replay()
             step += 1
@@ -131,14 +126,14 @@ def hvac():
 
 if __name__ == "__main__":
     mainTemp,atticTemp,basementTemp,heaterTemp,time=hvac()
-    print(mainTemp)
-    print(atticTemp)
-    print(basementTemp)
-    print(heaterTemp)
-    print(time)
+    # print(mainTemp)
+    # print(atticTemp)
+    # print(basementTemp)
+    # print(heaterTemp)
+    # print(time)
 
-    plt.plot(time,mainTemp)
-    plt.plot(time,atticTemp)
-    plt.plot(time,basementTemp)
-    plt.plot(time,heaterTemp)
-    plt.show()
+    # plt.plot(time,mainTemp)
+    # plt.plot(time,atticTemp)
+    # plt.plot(time,basementTemp)
+    # plt.plot(time,heaterTemp)
+    # plt.show()
