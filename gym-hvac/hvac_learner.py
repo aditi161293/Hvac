@@ -4,6 +4,7 @@ import gym
 import gym_hvac
 from gym_hvac import *
 import matplotlib.pyplot as plt
+import sys # to pass the name of the output file
 
 
 import numpy as np
@@ -75,7 +76,7 @@ def hvac():
     heaterTempList=[]
     timeList=[]
 
-    with open('/home/rjohnson/school/machine_learning/Hvac/output/results_test1.csv', 'w', newline='') as outfile:
+    with open(sys.argv[1], 'w', newline='') as outfile:
         csv_writer = csv.writer(outfile)
         csv_writer.writerow(['episode',
                              'step',
@@ -92,7 +93,7 @@ def hvac():
                              'total_reward',
                              'terminal'])
 
-    while run<1000:
+    while run<1500:
         state = env.reset()
         state = np.reshape(state, [1, observation_space])
         step = 0
@@ -100,12 +101,13 @@ def hvac():
         while True:
             action = dqn_solver.act(state)
             state_next, reward, terminal, info = env.step(action)
-            with open('/home/rjohnson/school/machine_learning/Hvac/output/results_test1.csv', 'a', newline='') as outfile:
-                csv_writer = csv.writer(outfile)
-                csv_writer.writerow([run, step, env.time] +
-                                    state_next.tolist() +
-                                    [env.total_heat_added, int(action), reward, env.total_reward, terminal])
-            reward = reward if not terminal else -reward
+            # Need to move this so it will only write to the csv file when it finishes an epoch
+            if terminal:
+                with open(sys.argv[1], 'a', newline='') as outfile:
+                    csv_writer = csv.writer(outfile)
+                    csv_writer.writerow([run, step, env.time] +
+                                        state_next.tolist() +
+                                        [env.total_heat_added, int(action), reward, env.total_reward, terminal])
             #print(f'REWARD:::::::{reward}')        
 
             state_next = np.reshape(state_next, [1, observation_space])
@@ -113,9 +115,10 @@ def hvac():
 
             dqn_solver.remember(state, action, reward, state_next, terminal)
             state = state_next
+            reward = reward if not terminal else -reward
 
             if terminal:
-                print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(step)  + ", total_reward: " + str(env.total_reward))
+                print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", Num Steps: " + str(step)  + ", total_reward: " + str(env.total_reward))
                 break
             dqn_solver.experience_replay()
             step += 1
@@ -125,6 +128,8 @@ def hvac():
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 1:
+        print('Please add the full name of the output file for the results')
     mainTemp,atticTemp,basementTemp,heaterTemp,time=hvac()
     # print(mainTemp)
     # print(atticTemp)

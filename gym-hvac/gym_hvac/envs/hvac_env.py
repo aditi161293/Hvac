@@ -192,7 +192,7 @@ class HVACEnv(gym.Env):
             40,
             40])
         self.step_count = 0
-        self.step_limit = 300
+        self.step_limit = 100
         self.time = 0
         # Tau is the time scale (seconds)
         # 900 is 15 minutes
@@ -319,7 +319,7 @@ class HVACEnv(gym.Env):
         self.state = np.concatenate((np.array([self.get_air_temperature(0),
                                                self.get_ground_temperature(0),
                                                0]),
-                                     self.np_random.uniform(low=10, high=30, size=(3,))), axis=0)
+                                     self.np_random.uniform(low=18, high=28, size=(3,))), axis=0)
         self.steps_beyond_done = None
         return np.array(self.state)
 
