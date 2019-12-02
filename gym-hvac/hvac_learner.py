@@ -108,7 +108,6 @@ def hvac():
                     csv_writer.writerow([run, step, env.time] +
                                         state_next.tolist() +
                                         [env.total_heat_added, int(action), reward, env.total_reward, terminal])
-            #print(f'REWARD:::::::{reward}')        
 
             state_next = np.reshape(state_next, [1, observation_space])
             sn=state_next.tolist()

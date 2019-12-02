@@ -86,7 +86,7 @@ class HVACEnv(gym.Env):
 
     def get_air_temperature(self, time):
         # This could be where weather data could come in.
-        # For now just use 0 (or 40)
+        # For now just use 0 (or 40)    
         return self.air_temperature
 
     def __init__(self):
