@@ -33,8 +33,7 @@ max_target = rewards[-1]
 plt.ion()
 # ax = plt.gca()
 
-index = 0
-epoch = 1
+index = 179970
 reward = []
 current_steps = []
 actions = []
@@ -42,8 +41,8 @@ c_base = []
 c_main = []
 c_atic = []
 #fig, ax = plt.subplots(3, sharex=True, clear=True)
-
-for i in terminal:
+plt.rcParams["figure.figsize"] = [16,9]
+for i in terminal[index:]:
         if i == 1.0:
                 """
                 # # rew, = plt.plot(current_steps, reward)
@@ -88,12 +87,22 @@ for i in terminal:
                 #ax[0].set_ylim(right=110)
                 #ax[0].xlim(right=110)
                 #ax[0].xlim(left=0)
-                at, = ax1.plot(current_steps, c_main)
-                ax1.plot(current_steps, c_base)
-                ax1.plot(current_steps, c_atic)
-                ax1.set_title("Temperatures")
+                ma, = ax1.plot(current_steps, c_main)
+                ba, = ax1.plot(current_steps, c_base)
+                at, = ax1.plot(current_steps, c_atic)
+                no = ax1.axhline(y=25, color='g', ls='--')
+                low = ax1.axhline(y=38, color='r', ls='--')
+                high = ax1.axhline(y=12, color='r', ls='--')
+                low.set_label("Low Cut Off")
+                high.set_label("High Cut Off")
+                no.set_label("Target Temp")
+                ma.set_label("Main")
+                ba.set_label("Basement")
+                at.set_label("Attic")
+                ax1.set_title(f"Temperatures | Epoch: {int(episodes[index])}")
                 ax1.set_ylim([10,40])
-                ax1.set_xlim([-10,110])
+                ax1.set_xlim([-5,110])
+                ax1.legend()
                 ax1.grid()
 
                 ax2 = plt.subplot(312)
@@ -101,23 +110,31 @@ for i in terminal:
                 ax2.plot(current_steps, reward)
                 ax2.set_title("Rewards")
                 ax2.set_ylim([-30,30])
-                ax2.set_xlim([-10,110])
+                ax2.set_xlim([-5,110])
                 ax2.grid()
 
+
+                no_action = 1
                 ax3 = plt.subplot(313)
 
                 ax3.plot(current_steps, actions)
-                ax3.set_title("Actions Taken")
-                ax3.set_ylim([-3,3])
-                ax3.set_xlim([-10,110])
+                ax3.set_title("HVAC Action")
+                ax3.set_ylim([-.5,3])
+                ax3.set_xlim([-5,110])
+                no = ax3.axhline(y=1, color='g', ls='--')
+                heat = ax3.axhline(y=2, color='r', ls='--')
+                cool = ax3.axhline(y=0, color='b', ls='--')
+                no.set_label("No action")
+                heat.set_label("Hot Air")
+                cool.set_label("Cool Air")
+                ax3.legend()
                 ax3.grid()
 
-
-                
-                
-                
-                plt.show()
-                plt.pause(.001)
+                if episodes[index] == 0 or episodes[index] == 50 or episodes[index] % 100 == 0:
+                        plt.savefig(f'output/figs/epoch_{int(episodes[index])}.png',bbox_inches='tight')
+                        # exit(0)
+                # plt.show()
+                # plt.pause(.001)
 
                 c_atic.clear()
                 c_main.clear()
@@ -125,9 +142,8 @@ for i in terminal:
                 reward.clear()
                 current_steps.clear()
                 actions.clear()
-                epoch += 1
                 plt.clf()
-
+                print(f'Epoch: {episodes[index]}')
         else:
                 reward.append(individual_rewards[index])
                 current_steps.append(steps[index])
