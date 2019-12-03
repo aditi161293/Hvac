@@ -30,7 +30,7 @@ for i in data.total_reward.tolist():
 max_target = rewards[-1]
 
 
-# plt.ion()
+plt.ion()
 # ax = plt.gca()
 
 index = 0
@@ -41,44 +41,93 @@ actions = []
 c_base = []
 c_main = []
 c_atic = []
+#fig, ax = plt.subplots(3, sharex=True, clear=True)
+
 for i in terminal:
         if i == 1.0:
-                plt.clf()
-                # rew, = plt.plot(current_steps, reward)
-                # act, = plt.plot(current_steps, actions)
-                # rew.set_label('Reward')
-                # act.set_label('Action')
+                """
+                # # rew, = plt.plot(current_steps, reward)
+                # # act, = plt.plot(current_steps, actions)
+                # # rew.set_label('Reward')
+                # # act.set_label('Action')
                 # # plt.text(5, 150, f'Epoch: {epoch}')
-                # plt.plot(current_steps, reward)
-                # plt.plot(current_steps, actions)
+                # # plt.plot(current_steps, reward)
+                # # plt.plot(current_steps, actions)
                 
-                at, = plt.plot(current_steps, c_atic)
-                m, = plt.plot(current_steps, c_main)
-                b, = plt.plot(current_steps, c_base)
+                # at, = plt.plot(current_steps, c_atic)
+                # m, = plt.plot(current_steps, c_main)
+                # b, = plt.plot(current_steps, c_base)
 
-                at.set_label('Attic')
-                m.set_label('Main')
-                b.set_label('Basement')
-                # rew.set_label('Rewards')
-                # act.set_label('Action')
-                plt.ylim(top=30)
-                plt.ylim(bottom=10)
-                plt.xlim(left=0)
-                plt.xlim(right=310)
-                plt.xlabel(f'Number of Steps to Terminal | Epoch: {epoch}')
-                plt.ylabel('Epoch Reward')
-                plt.legend()
-                plt.draw()
-                # plt.show()
-                plt.pause(.1)
+                # at.set_label('Attic')
+                # m.set_label('Main')
+                # b.set_label('Basement')
+                # # rew.set_label('Rewards')
+                # # act.set_label('Action')
+                # plt.ylim(top=30)
+                # plt.ylim(bottom=10)
+                # plt.xlim(right=110)
+                # plt.xlim(left=0)
+                # plt.xlabel(f'Number of Steps to Terminal | Epoch: {epoch}')
+                # plt.ylabel('Epoch Reward')
+                # plt.legend()
+                # plt.draw()
+                # # plt.show()
+                # plt.pause(.001)
                 
-                current_steps.clear()
-                reward.clear()
-                actions.clear()
+                # reward.clear()
+                # actions.clear()
+                # current_steps.clear()
+
+                # c_atic.clear()
+                # c_main.clear()
+                # c_base.clear()
+                # epoch += 1
+                """
+                ax1 = plt.subplot(311)
+
+                #ax[0].set_ylim(right=110)
+                #ax[0].xlim(right=110)
+                #ax[0].xlim(left=0)
+                at, = ax1.plot(current_steps, c_main)
+                ax1.plot(current_steps, c_base)
+                ax1.plot(current_steps, c_atic)
+                ax1.set_title("Temperatures")
+                ax1.set_ylim([10,40])
+                ax1.set_xlim([-10,110])
+                ax1.grid()
+
+                ax2 = plt.subplot(312)
+
+                ax2.plot(current_steps, reward)
+                ax2.set_title("Rewards")
+                ax2.set_ylim([-30,30])
+                ax2.set_xlim([-10,110])
+                ax2.grid()
+
+                ax3 = plt.subplot(313)
+
+                ax3.plot(current_steps, actions)
+                ax3.set_title("Actions Taken")
+                ax3.set_ylim([-3,3])
+                ax3.set_xlim([-10,110])
+                ax3.grid()
+
+
+                
+                
+                
+                plt.show()
+                plt.pause(.001)
+
                 c_atic.clear()
                 c_main.clear()
                 c_base.clear()
+                reward.clear()
+                current_steps.clear()
+                actions.clear()
                 epoch += 1
+                plt.clf()
+
         else:
                 reward.append(individual_rewards[index])
                 current_steps.append(steps[index])
@@ -86,7 +135,6 @@ for i in terminal:
                 c_base.append(basement[index])
                 c_main.append(main[index])
                 c_atic.append(attic[index])
-
 
 
         index += 1
