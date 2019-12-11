@@ -9,6 +9,8 @@ import gym
 from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
+import pandas as pd
+
 
 from collections import namedtuple
 
@@ -96,7 +98,6 @@ class HVACEnv(gym.Env):
         return self.air_temperature
 
     def __init__(self):
-        self.ground_temperature = 10
         self.air_temperature = 0
         # Roughly 1 degree every five minutes
         self.hvac_temperature = 0.00333
@@ -212,8 +213,17 @@ class HVACEnv(gym.Env):
 
         # Terminate upon reaching failure conditions
         self.termination = False
-
+        self.air_temperature_list=[]
+        self.air_temperature_index=1
+        filename = 'D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/Dataset.csv'
+        data = pd.read_csv(filename, dtype=float)
+        print(data.columns)
+        self.air_temperature_list=data.Temperature.tolist()
+        print(len(self.air_temperature_list))
         self.steps_beyond_done = None
+        self.ground_temperature = self.air_temperature-4
+
+
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -254,10 +264,12 @@ class HVACEnv(gym.Env):
 
     def step(self, action):
         #self.termination = False
+        if self.air_temperature_index > 145632:
+            self.air_temperature_index = 1
         assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
         state = self.state
         air_temp, ground_temp, hvac_temp, basement_temp, main_temp, attic_temp = state
-
+        self.air_temperature=self.air_temperature_list[self.air_temperature_index]
         # Basement
         basement_temp_change_equation = self.basement.get_temp_change_eq()
         new_basement_temp = basement_temp_change_equation(self.time, self.tau, basement_temp, action) + basement_temp
@@ -291,13 +303,7 @@ class HVACEnv(gym.Env):
         done_basement = self.desired_temperature_low <= new_basement_temp <= self.desired_temperature_high
         done_attic = self.desired_temperature_low <=  new_main_temp <= self.desired_temperature_high
         done_main = self.desired_temperature_low <= new_main_temp <= self.desired_temperature_high
-        
 
-
-        # done = bool(done_basement_lower or done_basement_upper
-        #             and done_main_lower or done_main_upper
-        #             and done_attic_lower or done_attic_upper
-        #             and done_step_count_limit) and self.termination
         done = bool(done_basement and done_attic and done_main) or self.termination or self.step_count > self.step_limit
 
 
@@ -315,6 +321,7 @@ class HVACEnv(gym.Env):
             self.steps_beyond_done += 1
             reward = 0.0
         self.step_count += 1
+        self.air_temperature_index +=1
         self.time += self.tau
         self.total_reward += reward
         return np.array(self.state), reward, done, {}
@@ -322,6 +329,10 @@ class HVACEnv(gym.Env):
     def reset(self):
         self.time = 0
         self.total_heat_added = 0
+        if self.step_count<97 and self.step_count!=0:
+            self.air_temperature_index = self.air_temperature_index+ 96 - self.step_count
+        print(self.air_temperature_index)
+
         self.step_count = 0
         self.total_reward = 0
         self.state = np.concatenate((np.array([self.get_air_temperature(0),
