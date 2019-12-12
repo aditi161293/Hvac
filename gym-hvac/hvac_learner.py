@@ -68,7 +68,6 @@ class DQNSolver:
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
 
 def hvac():
-    print("hereee")
     env = gym.make(ENV_NAME)
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
@@ -76,7 +75,7 @@ def hvac():
     run = 0
     totalr = 0
 
-    with open('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output/results.csv', 'w', newline='') as outfile:
+    with open(sys.argv[1], 'w', newline='') as outfile:
 
         csv_writer = csv.writer(outfile)
         csv_writer.writerow(['episode',
@@ -102,7 +101,7 @@ def hvac():
         while True:
             action = dqn_solver.act(state)
             state_next, reward, terminal, info = env.step(action)
-            with open('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output/results.csv', 'a', newline='') as outfile:
+            with open(sys.argv[1], 'a', newline='') as outfile:
                 csv_writer = csv.writer(outfile)
                 csv_writer.writerow([run, step, env.time] +
                                     state_next.tolist() +
@@ -130,7 +129,7 @@ def hvac():
 
 # After Training
     run = 0
-    with open('D:/Study Material/Clean Energy/CleanEnergyHVACGroup-master/output/resultsTrained.csv', 'w', newline='') as outfile:
+    with open(sys.argv[1], 'w', newline='') as outfile:
 
         csv_writer = csv.writer(outfile)
         csv_writer.writerow(['episode',
@@ -191,16 +190,3 @@ def hvac():
 
 if __name__ == "__main__":
     hvac()
-    # print(mainTemp)
-    # print(atticTemp)
-    # print(basementTemp)
-    # print(heaterTemp)
-    # print(time)
-    # print(ttr)
-    # print(tr)
-    #
-    # plt.plot(time,mainTemp)
-    # plt.plot(time,atticTemp)
-    # plt.plot(time,basementTemp)
-    # plt.plot(time,heaterTemp)
-    # plt.show()
