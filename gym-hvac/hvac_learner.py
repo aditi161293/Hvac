@@ -130,14 +130,3 @@ if __name__ == "__main__":
     if len(sys.argv) < 1:
         print('Please add the full name of the output file for the results')
     mainTemp,atticTemp,basementTemp,heaterTemp,time=hvac()
-    # print(mainTemp)
-    # print(atticTemp)
-    # print(basementTemp)
-    # print(heaterTemp)
-    # print(time)
-
-    # plt.plot(time,mainTemp)
-    # plt.plot(time,atticTemp)
-    # plt.plot(time,basementTemp)
-    # plt.plot(time,heaterTemp)
-    # plt.show()
